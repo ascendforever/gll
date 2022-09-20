@@ -1,0 +1,167 @@
+
+__all__ = [
+    '_load_regex',
+    'load',
+    '_load_mil_regex',
+    'load_mil',
+    't',
+    't_mil',
+    'd',
+    'dt',
+    'dt_mil',
+    'td',
+    'td_mil',
+    't_now',
+    't_mil_now',
+    'd_now',
+    'dt_now',
+    'now',
+    'dt_mil_now',
+    'td_now',
+    'td_mil_now',
+]
+
+# [Created 11/11/21]
+
+from gll.__common import *
+from gll.__static import *
+from datetime import datetime as datetime_datetime
+import collections as col
+
+_load_regex:t.Final[re.Pattern] = re.compile(
+    # 1                   2                                3        4                   5              6
+    r'(0?[1-9]|1[0-2])[-/](0?[1-9]|[12]\d|3[01])[-/](?:20)?(\d\d) +?(0?[1-9]|1[012])(?::([0-5]?\d))? *?([ap]m)?',
+    re.I
+)
+@cython.ccall
+def load(
+        dt # noqa shadowing
+        :str, tzinfo:t.Optional[datetime.tzinfo]=None) -> t.Optional[datetime.datetime]:
+    """Convert a datetime string to a datetime
+    Returns None if the string was invalid
+    Year is considered to be after 2000 only!"""
+    m:t.Optional[re.Match[str]] = _load_regex.fullmatch(dt)
+    if m is None: return None
+    ampm:str = m[6]
+    am_time:(
+        cython.bint # noqa
+    ) = ampm is None or ampm.lower()=='am' # true if am else pm
+    del ampm
+    hour:(
+        cython.uchar # noqa
+    ) = int(m[4])
+    if am_time: # if am
+        if hour==12: # if its midnight
+            hour = 0 # then we are at 0 hours
+    else: # don't make this an elif, it is more concise this way
+        if hour!=12: # if it is not noon
+            hour += 12 # we need to make the hour right
+    minute_str:str = m[5]
+    minute:(
+        cython.uchar # noqa
+    ) = 0 if minute_str is None else int(minute_str)
+    return datetime.datetime(month=int(m[1]), day=int(m[2]), year=2000+int(m[3]), hour=hour, minute=minute, tzinfo=tzinfo)
+
+
+_load_mil_regex:t.Final[re.Pattern] = re.compile(
+    # 1                   2                                3        4                     5
+    r'(0?[1-9]|1[0-2])[-/](0?[1-9]|[12]\d|3[01])[-/](?:20)?(\d\d) +?(0?[1-9]|1\d|2[0-4]):?([0-5]?\d)?',
+    re.I
+)
+@cython.ccall
+def load_mil(
+        dt # noqa shadowing
+        :str, tzinfo:t.Optional[datetime.tzinfo]=None) -> t.Optional[datetime.datetime]:
+    """Convert a military datetime string to a datetime
+    Returns None if the string was invalid
+    Year is considered to be after 2000 only!"""
+    m:t.Optional[re.Match[str]] = _load_mil_regex.fullmatch(dt)
+    if m is None: return None
+    hour:(
+        cython.uchar # noqa
+    ) = int(m[4])
+    if hour==24: # sometimes it is 24, but we prefer 0
+        hour = 0
+    minute_str:str = m[5]
+    minute:(
+        cython.uchar # noqa
+    ) = 0 if minute_str is None else int(minute_str)
+    return datetime.datetime(month=int(m[1]), day=int(m[2]), year=2000+int(m[3]), hour=hour, minute=minute, tzinfo=tzinfo)
+
+
+
+__datetime_datetime_strfttime = datetime_datetime.strftime
+__datetime_datetime_now = datetime_datetime.now # note: datetime.datetime.now is faster than its equivalent of datetime.datetime.fromtimestamp(time.time())
+
+# we don't use lambdas for this because we lose the type annotations - NO MATTER WHAT
+@cython.ccall
+def t     (
+        dt # noqa shadowing
+        :datetime_datetime) -> str: return __datetime_datetime_strfttime(dt, "%I:%M %p"         )
+@cython.ccall
+def t_mil (
+        dt # noqa shadowing
+        :datetime_datetime) -> str: return __datetime_datetime_strfttime(dt, "%H:%M"            )
+@cython.ccall
+def d     (
+        dt # noqa shadowing
+        :datetime_datetime) -> str: return __datetime_datetime_strfttime(dt, "%m/%d/%y"         )
+@cython.ccall
+def dt    (
+        dt # noqa shadowing
+        :datetime_datetime) -> str: return __datetime_datetime_strfttime(dt, "%m/%d/%y %I:%M %p")
+@cython.ccall
+def dt_mil(
+        dt # noqa shadowing
+        :datetime_datetime) -> str: return __datetime_datetime_strfttime(dt, "%m/%d/%y %H:%M"   )
+@cython.ccall
+def td    (
+        dt # noqa shadowing
+        :datetime_datetime) -> str: return __datetime_datetime_strfttime(dt, "%I:%M %p %m/%d/%y")
+@cython.ccall
+def td_mil(
+        dt # noqa shadowing
+        :datetime_datetime) -> str: return __datetime_datetime_strfttime(dt, "%H:%M %m/%d/%y"   )
+
+@cython.ccall
+def t_now     () -> str:
+    dt_class = datetime.datetime
+    return dt_class.strftime(dt_class.now(), "%I:%M %p"         )
+@cython.ccall
+def t_mil_now () -> str:
+    dt_class = datetime.datetime
+    return dt_class.strftime(dt_class.now(), "%H:%M"            )
+@cython.ccall
+def d_now     () -> str:
+    dt_class = datetime.datetime
+    return dt_class.strftime(dt_class.now(), "%m/%d/%y"         )
+@cython.ccall
+def dt_now() -> str:
+    dt_class = datetime.datetime
+    return dt_class.strftime(dt_class.now(), "%m/%d/%y %I:%M %p")
+now = dt_now
+@cython.ccall
+def dt_mil_now() -> str:
+    dt_class = datetime.datetime
+    return dt_class.strftime(dt_class.now(), "%m/%d/%y %H:%M"   )
+@cython.ccall
+def td_now    () -> str:
+    dt_class = datetime.datetime
+    return dt_class.strftime(dt_class.now(), "%I:%M %p %m/%d/%y")
+@cython.ccall
+def td_mil_now() -> str:
+    dt_class = datetime.datetime
+    return dt_class.strftime(dt_class.now(), "%H:%M %m/%d/%y"   )
+
+
+
+
+
+
+
+
+
+
+
+
+

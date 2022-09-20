@@ -1,0 +1,45 @@
+
+__all__ = [
+    'create_task_named',
+    'rename_task',
+    'bind_tasks'
+]
+
+from gll.__common import *
+from gll.__static import *
+
+@cython.ccall
+def create_task_named(name:str, coro:col.abc.Awaitable[T]) -> asyncio.Task[T]:
+    tsk:asyncio.Task = asyncio.create_task(coro)
+    tsk.set_name(name)
+    return tsk
+@cython.ccall
+def rename_task(task:asyncio.Task[T], name:str) -> asyncio.Task[T]:
+    task.set_name(name)
+    return task
+
+
+# noinspection PyUnusedLocal
+@cython.ccall
+def _callback(other:asyncio.Task, this:asyncio.Task) -> None:
+    if not other.done():
+        other.cancel()
+@cython.ccall
+def bind_tasks(main:asyncio.Task, other:asyncio.Task) -> None:
+    """Bind two tasks together such that when one is completed, the other is cancelled"""
+    main.add_done_callback(functools.partial(_callback, other))
+    other.add_done_callback(functools.partial(_callback, main))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
