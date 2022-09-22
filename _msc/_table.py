@@ -94,8 +94,10 @@ class Table:
         """Useful for when each row is massive in size;
         Better to use `Table.fmt_all_auto` and `Table.string` for speed"""
         return map(self.joining.join, self.rows())
-    def string (self) -> str: return '\n'.join(self.joined_rows())
-    def __str__(self) -> str: return '\n'.join(self.joined_rows()) # meant to be a clone of the above
+    def __str__(self) -> str: return '\n'.join(self.joined_rows())
+    if t.TYPE_CHECKING:
+        def string (self) -> str: ...
+    else: string = __str__
     def dump_low_memory(self, stream:t.textio=sys.stdout) -> none:
         """dump without creating as a string first - slower than normal .dump(), but won't create a string in memory
         leaves a trailing newline in stream"""
