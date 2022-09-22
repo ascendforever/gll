@@ -98,10 +98,10 @@ class Table:
     if t.TYPE_CHECKING:
         def string (self) -> str: ...
     else: string = __str__
-    def dump_low_memory(self, stream:t.textio=sys.stdout) -> none:
-        """dump without creating as a string first - slower than normal .dump(), but won't create a string in memory
+    def dump_low_memory(self, stream:t.TextIO=sys.stdout) -> None:
+        """Dump without creating as a string first - slower than normal .dump(), but won't create a string in memory
         leaves a trailing newline in stream"""
-        # do not use typing.textio.writelines it is garbage
+        # do not use typing.TextIO.writelines it is garbage
         __stream__write = stream.write
         __self_joining = self.joining
         for row in self.rows():
@@ -110,14 +110,14 @@ class Table:
                 __stream__write(__self_joining)
             __stream__write(row[-1])
             __stream__write('\n')
-    def dump(self, stream:t.textio=sys.stdout) -> none:
-        """leaves a trailing newline in stream"""
+    def dump(self, stream:t.TextIO=sys.stdout) -> None:
+        """Leaves a trailing newline in stream"""
         __stream__write = stream.write
         for line in self.joined_rows():
             __stream__write(line)
             __stream__write('\n')
-    # def copy_deep(self, /) -> table: # unnecessary
+    # def copy_deep(self, /) -> Table: # unnecessary
     #     inst = self.__class__.__new__(self.__class__)
     #     inst.frame = (col.copy() for col in self.frame)
-    #     inst.longest_each = array.array('h', self.longest_each)
+    #     inst.longest_each = array.array('H', self.longest_each)
     #     return inst
