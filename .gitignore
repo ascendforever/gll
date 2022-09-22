@@ -1,5 +1,5 @@
 __pycache__
 *.so
 *.pyd
-.clean.py
+.clean
 .test.py
