@@ -9,7 +9,7 @@ from gll.__static import *
 
 
 class Table:
-    """Easy text tabling
+    """Easy text table
     [Created 5/30/21]"""
     __slots__    = ('frame','_longest_each','joining', '__weakref__')
     __match_args__=('frame','_longest_each','joining')
@@ -119,17 +119,3 @@ class Table:
     #     inst.frame = (col.copy() for col in self.frame)
     #     inst.longest_each = array.array('h', self.longest_each)
     #     return inst
-
-
-
-
-
-
-
-
-
-
-
-
-
-
