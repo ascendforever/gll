@@ -31,7 +31,7 @@ class Tree:
         return self._cumulative_children_count()
     def _cumulative_children_count(self) -> int:
         """Not cached"""
-        return self.len_children + sum(map(self.__class__._cumulative_children_count, self.children))
+        return self.len_children + sum(child.cumulative_children_count for child in self.children) # sum(map(self.__class__._cumulative_children_count, self.children))
     @classmethod
     def alt(cls, label:str, desc:t.Optional[str], children:abcs.Sequence[Tree]) -> Tree:
         """Alternative initiation method"""
@@ -231,22 +231,3 @@ class PathTree(Tree):
             finally: _path_sizer.cache_clear()
         else: children:list[Tree] = []
         cls.rootwrite(stream_write, children, desc_spacing=desc_spacing, desc_size=desc_size, indent=indent)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
